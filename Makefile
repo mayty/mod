@@ -10,7 +10,6 @@ PIP_DEV_CONFIG=pip/dev.conf
 
 all: help
 $(VENV_ACTIVATE):
-	pyenv activate mod
 	PIP_CONFIG_FILE=$(PIP_DEV_CONFIG) pip install pip==$(PIP_VERSION) setuptools==$(SETUP_TOOLS_VERSION)
 
 .PHONY: typecheck

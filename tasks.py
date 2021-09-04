@@ -14,6 +14,9 @@ from invoke import task
 def lab1(ctx, seed=1, a=13, m=19, *args, **kwargs):
     """
     Execute lab1
+
+    Example:
+        inv lab1 -s 1 -a 6700417 -m 524287
     """
     from mod.lab1 import Lab1
 
