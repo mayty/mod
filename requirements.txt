@@ -1,0 +1,5 @@
+invoke==1.6.0
+mypy==0.910
+structlog==21.1.0
+matplotlib==3.4.3
+data-science-types==0.2.23
