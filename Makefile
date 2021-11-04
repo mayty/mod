@@ -16,7 +16,13 @@ $(VENV_ACTIVATE):
 typecheck: $(VENV_ACTIVATE)
 	mypy -p mod
 
-check: typecheck
+stylecheck: $(VENV_ACTIVATE)
+	black --check --diff mod
+
+style: $(VENV_ACTIVATE)
+	black mod
+
+check: typecheck stylecheck
 
 .PHONY: install
 install: $(VENV_ACTIVATE)

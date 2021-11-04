@@ -12,9 +12,9 @@ logger = get_logger(__name__)
 class Lab1(BaseProcessor):
     def __init__(self, seed: int, a: int, m: int) -> None:
         super().__init__()
-        assert a > 0, 'a must be positive'
-        assert m > 0, 'm must be positive'
-        assert seed > 0, 'seed must be positive'
+        assert a > 0, "a must be positive"
+        assert m > 0, "m must be positive"
+        assert seed > 0, "seed must be positive"
         self._starting_seed = seed
         self._seed = self._starting_seed
         self._a = a
@@ -74,16 +74,23 @@ class Lab1(BaseProcessor):
         probability = 2 * K / len(numbers)
 
         L = i3 + P
-        avg = sum(len(ids) * value for value, ids in values_occurrence.items()) / self._curr_index
+        avg = (
+            sum(len(ids) * value for value, ids in values_occurrence.items())
+            / self._curr_index
+        )
         dispersion = sum(
-            len(ids) * ((key - avg) ** 2)
-            for key, ids in values_occurrence.items()
+            len(ids) * ((key - avg) ** 2) for key, ids in values_occurrence.items()
         ) / (self._curr_index - 1)
         standard_deviation = dispersion ** 0.5
-        logger.info('Samples info', sample_size=self._curr_index)
-        logger.info('Task 2', average=avg, dispersion=dispersion, standard_deviation=standard_deviation)
-        logger.info('Task 3', probability=probability)
-        logger.info('Task 4', period_size=P, aperiodic_size=L)
+        logger.info("Samples info", sample_size=self._curr_index)
+        logger.info(
+            "Task 2",
+            average=avg,
+            dispersion=dispersion,
+            standard_deviation=standard_deviation,
+        )
+        logger.info("Task 3", probability=probability)
+        logger.info("Task 4", period_size=P, aperiodic_size=L)
 
         plt.hist(numbers, bins=20)  # type: ignore
         plt.show()

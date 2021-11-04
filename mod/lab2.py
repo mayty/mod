@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 
 
 class BaseGenerator:
-    distribution_type = 'error'
+    distribution_type = "error"
 
     def transform(self, value: float) -> float:
         raise NotImplementedError()
@@ -22,11 +22,11 @@ class BaseGenerator:
 
 
 class EqualDistributionGenerator(BaseGenerator):
-    distribution_type = 'equal distribution'
+    distribution_type = "equal distribution"
 
     def __init__(self, a: float, b: float) -> None:
         super().__init__()
-        assert a < b, 'a must be less then b'
+        assert a < b, "a must be less then b"
         self.a = a
         self.b = b
 
@@ -35,7 +35,8 @@ class EqualDistributionGenerator(BaseGenerator):
 
 
 class GaussianDistributionGenerator(BaseGenerator):
-    distribution_type = 'gaussian distibution'
+    distribution_type = "gaussian distibution"
+
     def __init__(self, m: float, d: float) -> None:
         super().__init__()
         self.m = m
@@ -50,18 +51,18 @@ class GaussianDistributionGenerator(BaseGenerator):
 
 
 class ExponentialDistributionGenerator(BaseGenerator):
-    distribution_type = 'exponential distribution'
+    distribution_type = "exponential distribution"
 
     def __init__(self, l: float) -> None:
         super().__init__()
         self.l = l
 
     def transform(self, value: float) -> float:
-        return - log(value) / self.l
+        return -log(value) / self.l
 
 
 class GammaDistributionGenerator(BaseGenerator):
-    distribution_type = 'gamma distribution'
+    distribution_type = "gamma distribution"
 
     def __init__(self, l: float, n: int) -> None:
         super().__init__()
@@ -72,12 +73,12 @@ class GammaDistributionGenerator(BaseGenerator):
         result = []
         for i in range(len(values)):
             p = prod(values[randrange(0, len(values) - 1)] for j in range(self.n))
-            result.append(-log(p)/self.l)
+            result.append(-log(p) / self.l)
         return result
 
 
 class TrianguralDistributionGenerator(BaseGenerator):
-    distribution_type = 'triangural distribution'
+    distribution_type = "triangural distribution"
 
     def __init__(self, a: float, b: float, c: bool) -> None:
         super().__init__()
@@ -97,18 +98,20 @@ class TrianguralDistributionGenerator(BaseGenerator):
 
 
 class SimpsonDistributionGenerator(BaseGenerator):
-    distribution_type = 'simpson distribution'
+    distribution_type = "simpson distribution"
 
     def __init__(self, a: float, b: float) -> None:
         self.a = a
         self.b = b
-        self.equal_generator = EqualDistributionGenerator(a=a/2, b=b/2)
+        self.equal_generator = EqualDistributionGenerator(a=a / 2, b=b / 2)
 
     def transform_bulk(self, values: List[float]) -> List[float]:
         equal_values = self.equal_generator.transform_bulk(values)
         result = []
         for i in range(len(values)):
-            result.append(sum(equal_values[randrange(0, len(equal_values) - 1)] for j in range(2)))
+            result.append(
+                sum(equal_values[randrange(0, len(equal_values) - 1)] for j in range(2))
+            )
         return result
 
 
@@ -116,15 +119,15 @@ class Lab2(BaseProcessor):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self.numbers = [random() for i in range(100000)]
-        self.equal_kw = kwargs.get('equeal_kw') or {}
-        self.gaussian_kw = kwargs.get('gaussian_kw') or {}
-        self.exponential_kw = kwargs.get('exponential_kw') or {}
-        self.gamma_kw = kwargs.get('gamma_kw') or {}
-        self.triangural_kw = kwargs.get('triangural_kw') or {}
-        self.simpson_kw = kwargs.get('simpson_kw') or {}
+        self.equal_kw = kwargs.get("equeal_kw") or {}
+        self.gaussian_kw = kwargs.get("gaussian_kw") or {}
+        self.exponential_kw = kwargs.get("exponential_kw") or {}
+        self.gamma_kw = kwargs.get("gamma_kw") or {}
+        self.triangural_kw = kwargs.get("triangural_kw") or {}
+        self.simpson_kw = kwargs.get("simpson_kw") or {}
 
     def show_properties(self, generator: BaseGenerator, ax: Axes) -> None:
-        logger.info('Generating dataset', type=generator.distribution_type)
+        logger.info("Generating dataset", type=generator.distribution_type)
         values = generator.transform_bulk(self.numbers)
         show_properties(values)
         ax.hist(values, bins=20)  # type: ignore
@@ -132,12 +135,13 @@ class Lab2(BaseProcessor):
 
     def execute(self) -> None:
         fig, axs = plt.subplots(  # type: ignore
-            2,3,
+            2,
+            3,
             gridspec_kw={
-                'hspace': 0.29,
-                'left': 0.05,
-                'right': 0.95,
-            }
+                "hspace": 0.29,
+                "left": 0.05,
+                "right": 0.95,
+            },
         )
         for ax, generator in zip(
             axs.flat,  # type: ignore
@@ -148,7 +152,7 @@ class Lab2(BaseProcessor):
                 GammaDistributionGenerator(**self.gamma_kw),
                 SimpsonDistributionGenerator(**self.simpson_kw),
                 TrianguralDistributionGenerator(**self.triangural_kw),
-            )
+            ),
         ):
             ax.yaxis.set_ticklabels([])
             self.show_properties(generator, ax)

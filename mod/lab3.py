@@ -14,14 +14,14 @@ logger = get_logger(__name__)
 
 class Block:
     def __init__(self) -> None:
-        self._prev: Optional['Block'] = None
-        self._next: Optional['Block'] = None
+        self._prev: Optional["Block"] = None
+        self._next: Optional["Block"] = None
 
-    def set_next(self, next: 'Block'):
+    def set_next(self, next: "Block"):
         self._next = next
         next._prev = self
 
-    def set_prev(self, prev: 'Block'):
+    def set_prev(self, prev: "Block"):
         self._prev = prev
         prev._next = self
 
@@ -70,7 +70,7 @@ class BlockingGenerator(Block):
         if self._state == 2:
             if self._next is not None and not self._next.busy:
                 self._next.add_task()
-                self._state = 1 if self._fake else 0
+                self._state = 1
                 self._used = True
                 self._fake = False
                 return True
@@ -95,20 +95,20 @@ class BlockingGenerator(Block):
         return True
 
     def __repr__(self) -> str:
-        return f'<BlockingGenerator: used={self._used}, state={self._state}>'
+        return f"<BlockingGenerator: used={self._used}, state={self._state}>"
 
     @property
     def representation(self) -> List[str]:
         return [
-            '   -----   ',
-            '  /     \\  ',
-            ' /       \\ ',
-            '|         |',
-            '|    2    |',
-            '|         |',
-            ' \\       / ',
-            '  \\     /  ',
-            '   -----   '
+            "   -----   ",
+            "  /     \\  ",
+            " /       \\ ",
+            "|         |",
+            "|    2    |",
+            "|         |",
+            " \\       / ",
+            "  \\     /  ",
+            "   -----   ",
         ]
 
 
@@ -134,7 +134,7 @@ class Queue(Block):
 
     def add_task(self) -> None:
         if self._state >= self.size:
-            raise RuntimeError('Max queue size exceeded')
+            raise RuntimeError("Max queue size exceeded")
         self._state += 1
 
     @property
@@ -142,20 +142,20 @@ class Queue(Block):
         return self._state
 
     def __repr__(self) -> str:
-        return f'<Queue: size={self.size}, state={self._state}>'
+        return f"<Queue: size={self.size}, state={self._state}>"
 
     @property
     def representation(self) -> List[str]:
         return [
-            '-----------',
-            '|         |',
-            '|         |',
-            '|         |',
-            f'|    {self.size}    |',
-            '|         |',
-            '|         |',
-            '|         |',
-            '-----------'
+            "-----------",
+            "|         |",
+            "|         |",
+            "|         |",
+            f"|    {self.size}    |",
+            "|         |",
+            "|         |",
+            "|         |",
+            "-----------",
         ]
 
 
@@ -193,7 +193,7 @@ class NonBlockingChannel(Block):
 
     def add_task(self) -> None:
         if self._state == 1:
-            raise RuntimeError('Channel already busy')
+            raise RuntimeError("Channel already busy")
         self._state = 1
 
     @property
@@ -207,18 +207,18 @@ class NonBlockingChannel(Block):
     @property
     def representation(self) -> List[str]:
         return [
-            '   -----   ',
-            '  /     \\  ',
-            ' /       \\ ',
-            '|         |',
-            f'| p={self._p:.2f}  |',
-            '|         |',
-            ' \\       / ',
-            '  \\     /  ',
-            '   -----   ',
-            '     \\     ',
-            '      \\    ',
-            '       _|  ',
+            "   -----   ",
+            "  /     \\  ",
+            " /       \\ ",
+            "|         |",
+            f"| p={self._p:.2f}  |",
+            "|         |",
+            " \\       / ",
+            "  \\     /  ",
+            "   -----   ",
+            "     \\     ",
+            "      \\    ",
+            "       _|  ",
         ]
 
     @property
@@ -232,23 +232,23 @@ def get_representation(machine: List[Block]) -> List[str]:
     min_size = min(len(block.representation) for block in machine)
     for i in range(max_size):
         lines = []
-        appender = '->' if i == (min_size // 2) else '  '
+        appender = "->" if i == (min_size // 2) else "  "
         for block in machine:
             if i >= len(block.representation):
-                lines.append(' ' * (len(block.representation[0])))
+                lines.append(" " * (len(block.representation[0])))
             else:
                 lines.append(block.representation[i])
-        result.append('| ' + appender.join(lines) + ' |')
-    result.insert(0, '|' + (' ' * (len(result[0]) - 2)) + '|')
-    result.insert(0, '-' * len(result[0]))
-    result.append('|' + (' ' * (len(result[0]) - 2)) + '|')
-    result.append('-' * len(result[0]))
+        result.append("| " + appender.join(lines) + " |")
+    result.insert(0, "|" + (" " * (len(result[0]) - 2)) + "|")
+    result.insert(0, "-" * len(result[0]))
+    result.append("|" + (" " * (len(result[0]) - 2)) + "|")
+    result.append("-" * len(result[0]))
 
     return result
 
 
 def get_state(machine: List[Block]) -> str:
-    return ''.join(str(block.state) for block in machine)
+    return "".join(str(block.state) for block in machine)
 
 
 def iterate(machine: List[Block], outcomes: Tuple[bool, bool]) -> None:
@@ -257,7 +257,9 @@ def iterate(machine: List[Block], outcomes: Tuple[bool, bool]) -> None:
         block.reset_tick()
     while something_changed:
         something_changed = False
-        for block, outcome in zip(machine[::-1], [None, outcomes[0], None, outcomes[1]][::-1]):
+        for block, outcome in zip(
+            machine[::-1], [None, outcomes[0], None, outcomes[1]][::-1]
+        ):
             something_changed = something_changed or block.make_action(outcome=outcome)
 
 
@@ -274,9 +276,13 @@ def iterate_random(machine: List[Block]) -> None:
 class Simulator:
     def __init__(self):
         self.processed_states: Set[str] = set()
-        self.transitions_chances: Dict[str, Dict[str, Tuple[str, float, int]]] = defaultdict(dict)
+        self.transitions_chances: Dict[
+            str, Dict[str, Tuple[str, float, int]]
+        ] = defaultdict(dict)
 
-    def generate_transitions(self, machine: List[Block]) -> Dict[str, Dict[str, Tuple[str, float, int]]]:
+    def generate_transitions(
+        self, machine: List[Block]
+    ) -> Dict[str, Dict[str, Tuple[str, float, int]]]:
         self.processed_states = set()
         self.transitions_chances = defaultdict(dict)
         self._generate_transitions(machine)
@@ -300,13 +306,25 @@ class Simulator:
                 machine_copy[i].set_next(machine_copy[i + 1])
             iterate(machine_copy, chance)
             new_state = get_state(machine_copy)
-            t1 = ('p1', machine_copy[1].p) if chance[0] else ('q1', 1 - machine_copy[1].p)
-            t2 = ('p2', machine_copy[3].p) if chance[1] else ('q2', 1 - machine_copy[3].p)
-            probability = '*'.join((t1[0], t2[0]))
+            t1 = (
+                ("p1", machine_copy[1].p)
+                if chance[0]
+                else ("q1", 1 - machine_copy[1].p)
+            )
+            t2 = (
+                ("p2", machine_copy[3].p)
+                if chance[1]
+                else ("q2", 1 - machine_copy[3].p)
+            )
+            probability = "*".join((t1[0], t2[0]))
             probability_float = t1[1] * t2[1]  # type: float
             if new_state in self.transitions_chances[machine_state].keys():
-                old_probability_str, old_probability_float, old_loses = self.transitions_chances[machine_state][new_state]
-                new_probability_str = ' + '.join([old_probability_str, probability])
+                (
+                    old_probability_str,
+                    old_probability_float,
+                    old_loses,
+                ) = self.transitions_chances[machine_state][new_state]
+                new_probability_str = " + ".join([old_probability_str, probability])
                 new_probability_float = old_probability_float + probability_float
                 self.transitions_chances[machine_state][new_state] = (
                     new_probability_str,
@@ -317,7 +335,7 @@ class Simulator:
                 self.transitions_chances[machine_state][new_state] = (
                     probability,
                     probability_float,
-                    sum(b.decline_count for b in machine_copy)
+                    sum(b.decline_count for b in machine_copy),
                 )
             self._generate_transitions(machine_copy)
 
@@ -338,7 +356,9 @@ class Lab3(BaseProcessor):
         self.channel1.set_next(self.queue)
         self.queue.set_next(self.channel2)
 
-    def get_chances(self, transitions_chances: Dict[str, dict[str, Tuple[str, float, int]]]) -> Dict[str, float]:
+    def get_chances(
+        self, transitions_chances: Dict[str, dict[str, Tuple[str, float, int]]]
+    ) -> Dict[str, float]:
         all_states = sorted(list(transitions_chances.keys()))
         unsolved_states = copy(all_states)
         result: Dict[str, float] = {}
@@ -361,7 +381,11 @@ class Lab3(BaseProcessor):
                 if not found_unknown_transition:
                     got_new_solved = True
                     result[state] = c
-                    new_unsolved = [unsolved_state for unsolved_state in unsolved_states if unsolved_state != state]
+                    new_unsolved = [
+                        unsolved_state
+                        for unsolved_state in unsolved_states
+                        if unsolved_state != state
+                    ]
             unsolved_states = copy(new_unsolved)
 
         coefficients: List[List[float]] = []
@@ -385,21 +409,27 @@ class Lab3(BaseProcessor):
             coefficients[0][k] += 1.0
         consts[0] += 1
 
-        print('     ' + '  '.join(f' {state}' for state in unsolved_states))
+        print("     " + "  ".join(f" {state}" for state in unsolved_states))
         for state, lin_coefficients, c in zip(unsolved_states, coefficients, consts):
-            print(f'{state} ' + ', '.join(f'{k:5.2f}' for k in lin_coefficients) + f' : {c}')
+            print(
+                f"{state} "
+                + ", ".join(f"{k:5.2f}" for k in lin_coefficients)
+                + f" : {c}"
+            )
         a = array(coefficients)
         b = array(consts)
 
         answer = solve(a, b)
 
-        result.update({state: probability for state, probability in zip(unsolved_states, answer)})
+        result.update(
+            {state: probability for state, probability in zip(unsolved_states, answer)}
+        )
         return result
 
     def get_decline_chance(
-            self,
-            chances: Dict[str, float],
-            transitions: Dict[str, Dict[str, Tuple[str, float, int]]],
+        self,
+        chances: Dict[str, float],
+        transitions: Dict[str, Dict[str, Tuple[str, float, int]]],
     ) -> float:
         result = 0.0
         probability = self.p1 * (1.0 - self.p2)
@@ -413,14 +443,14 @@ class Lab3(BaseProcessor):
     def get_block_chance(self, chances: Dict[str, float]) -> float:
         result = 0.0
         for state, probability in chances.items():
-            if state.startswith('2'):
+            if state.startswith("2"):
                 result += probability
         return result
 
     def get_avg_queue_lengch(self, chances: Dict[str, float]) -> float:
         result = 0.0
         for state, probability in chances.items():
-            if state[2] == '1':
+            if state[2] == "1":
                 result += probability
         return result
 
@@ -434,21 +464,21 @@ class Lab3(BaseProcessor):
     def get_absolute_channel_capacity(self, chances: Dict[str, float]) -> float:
         result = 0.0
         for state, probability in chances.items():
-            if state.endswith('1'):
+            if state.endswith("1"):
                 result += probability * self.p2
         return result
 
     def get_channel1_load_coefficient(self, chances: Dict[str, float]) -> float:
         result = 0.0
         for state, probability in chances.items():
-            if state[1] == '1':
+            if state[1] == "1":
                 result += probability
         return result
 
     def get_channel2_load_coefficient(self, chances: Dict[str, float]) -> float:
         result = 0.0
         for state, probability in chances.items():
-            if state[3] == '1':
+            if state[3] == "1":
                 result += probability
         return result
 
@@ -458,9 +488,9 @@ class Lab3(BaseProcessor):
         transitions_chances = Simulator().generate_transitions(self.items)
         print()
         for state, transitions in transitions_chances.items():
-            print(f'{state}:')
+            print(f"{state}:")
             for new_state, stat in transitions.items():
-                print(f'\t{new_state} {(stat[0], stat[1])} {stat[2]}')
+                print(f"\t{new_state} {(stat[0], stat[1])} {stat[2]}")
 
         print()
         chances = self.get_chances(transitions_chances)
@@ -468,25 +498,25 @@ class Lab3(BaseProcessor):
             print(f"p('{state}') = {probability:.15f}")
         print()
         decline_chance = self.get_decline_chance(chances, transitions_chances)
-        print(f'decline chance             = {decline_chance:.20f}')
+        print(f"decline probability        = {decline_chance:.20f} (Pотк)")
         block_chance = self.get_block_chance(chances)
-        print(f'block chance               = {block_chance:.20f}')
+        print(f"block probability          = {block_chance:.20f} (Pбл)")
         average_queue_length = self.get_avg_queue_lengch(chances)
-        print(f'avgerage queue length      = {average_queue_length:.20f}')
+        print(f"avgerage queue length      = {average_queue_length:.20f} (Lоч)")
         average_requests_number = self.get_avg_requests_num(chances)
-        print(f'average requests number    = {average_requests_number:.20f}')
-        relative_channel_capacity = 1 - decline_chance
-        print(f'relative channel capacity  = {relative_channel_capacity:.20f}')
+        print(f"average requests number    = {average_requests_number:.20f} (Lс)")
         absolute_channel_capacity = self.get_absolute_channel_capacity(chances)
-        print(f'absolute channel capacity  = {absolute_channel_capacity:.20f}')
+        print(f"absolute channel capacity  = {absolute_channel_capacity:.20f} (A)")
+        relative_channel_capacity = absolute_channel_capacity / (0.5 * (1 - block_chance))
+        print(f"relative channel capacity  = {relative_channel_capacity:.20f} (Q)")
         average_in_queue_time = average_queue_length / absolute_channel_capacity
-        print(f'average in queue time      = {average_in_queue_time:.20f}')
+        print(f"average in queue time      = {average_in_queue_time:.20f} (Wоч)")
         average_in_system_time = average_requests_number / absolute_channel_capacity
-        print(f'average in system time     = {average_in_system_time:.20f}')
+        print(f"average in system time     = {average_in_system_time:.20f} (Wс)")
         channel_1_load_coefficient = self.get_channel1_load_coefficient(chances)
-        print(f'channel 1 load coefficient = {channel_1_load_coefficient:.20f}')
+        print(f"channel 1 load coefficient = {channel_1_load_coefficient:.20f} (Kкан1)")
         channel_2_load_coefficient = self.get_channel2_load_coefficient(chances)
-        print(f'channel 2 load coefficient = {channel_2_load_coefficient:.20f}')
+        print(f"channel 2 load coefficient = {channel_2_load_coefficient:.20f} (Ккан2)")
 
         machine = [copy(block) for block in self.items]
         for i in range(len(machine) - 1):
@@ -500,62 +530,74 @@ class Lab3(BaseProcessor):
             declines_count += sum(block.decline_count for block in machine)
             iterate_random(machine)
 
-        imperic_chances = {}
+        empirical_chances = {}
         for state, count in states_stats.items():
-            imperic_chances[state] = count / iterations_count
+            empirical_chances[state] = count / iterations_count
 
-        print('\nimperic probabilities:')
+        print("\nempirical probabilities:")
         for state, count in states_stats.items():
-            print(f'{state}: {(count / iterations_count):.6f}, error = {abs((count / iterations_count) - chances[state] ):.15f}')
+            print(
+                f"{state}: {(count / iterations_count):.6f}, error = {abs((count / iterations_count) - chances[state] ):.15f}"
+            )
 
         print()
-        imperic_decline_chance = declines_count / iterations_count
+        empirical_decline_chance = declines_count / iterations_count
         print(
-            f'decline chance             = {imperic_decline_chance:.20f}; '
-            f'error = {abs(imperic_decline_chance - decline_chance):.20f}'
+            f"decline probability        = {empirical_decline_chance:.20f}; "
+            f"error = {abs(empirical_decline_chance - decline_chance):.20f}"
         )
-        imperic_block_chance = self.get_block_chance(imperic_chances)
+        empirical_block_chance = self.get_block_chance(empirical_chances)
         print(
-            f'block chance               = {imperic_block_chance:.20f}; '
-            f'error = {abs(imperic_block_chance - block_chance):.20f}'
+            f"block probability          = {empirical_block_chance:.20f}; "
+            f"error = {abs(empirical_block_chance - block_chance):.20f}"
         )
-        imperic_average_queue_length = self.get_avg_queue_lengch(imperic_chances)
+        empirical_average_queue_length = self.get_avg_queue_lengch(empirical_chances)
         print(
-            f'avgerage queue length      = {imperic_average_queue_length:.20f}; '
-            f'error = {abs(imperic_average_queue_length - average_queue_length):.20f}'
+            f"avgerage queue length      = {empirical_average_queue_length:.20f}; "
+            f"error = {abs(empirical_average_queue_length - average_queue_length):.20f}"
         )
-        imperic_average_requests_number = self.get_avg_requests_num(imperic_chances)
+        empirical_average_requests_number = self.get_avg_requests_num(empirical_chances)
         print(
-            f'average requests number    = {imperic_average_requests_number:.20f}; '
-            f'error = {abs(imperic_average_requests_number - average_requests_number):.20f}'
+            f"average requests number    = {empirical_average_requests_number:.20f}; "
+            f"error = {abs(empirical_average_requests_number - average_requests_number):.20f}"
         )
-        imperic_relative_channel_capacity = 1 - imperic_decline_chance
-        print(
-            f'relative channel capacity  = {imperic_relative_channel_capacity:.20f}; '
-            f'error = {abs(imperic_relative_channel_capacity - relative_channel_capacity):.20f}'
+        empirical_absolute_channel_capacity = self.get_absolute_channel_capacity(
+            empirical_chances
         )
-        imperic_absolute_channel_capacity = self.get_absolute_channel_capacity(imperic_chances)
         print(
-            f'absolute channel capacity  = {imperic_absolute_channel_capacity:.20f}; '
-            f'error = {abs(imperic_absolute_channel_capacity - absolute_channel_capacity):.20f}'
+            f"absolute channel capacity  = {empirical_absolute_channel_capacity:.20f}; "
+            f"error = {abs(empirical_absolute_channel_capacity - absolute_channel_capacity):.20f}"
         )
-        imperic_average_in_queue_time = imperic_average_queue_length / imperic_absolute_channel_capacity
+        empirical_relative_channel_capacity = empirical_absolute_channel_capacity / (0.5 * (1 - empirical_block_chance))
         print(
-            f'average in queue time      = {imperic_average_in_queue_time:.20f}; '
-            f'error = {abs(imperic_average_in_queue_time - average_in_queue_time):.20f}'
+            f"relative channel capacity  = {empirical_relative_channel_capacity:.20f}; "
+            f"error = {abs(empirical_relative_channel_capacity - relative_channel_capacity):.20f}"
         )
-        imperic_average_in_system_time = imperic_average_requests_number / imperic_absolute_channel_capacity
-        print(
-            f'average in system time     = {imperic_average_in_system_time:.20f}; '
-            f'error = {abs(imperic_average_in_system_time - average_in_system_time):.20f}'
+        empirical_average_in_queue_time = (
+            empirical_average_queue_length / empirical_absolute_channel_capacity
         )
-        imperic_channel_1_load_coefficient = self.get_channel1_load_coefficient(imperic_chances)
         print(
-            f'channel 1 load coefficient = {imperic_channel_1_load_coefficient:.20f}; '
-            f'error = {abs(imperic_channel_1_load_coefficient - channel_1_load_coefficient):.20f}'
+            f"average in queue time      = {empirical_average_in_queue_time:.20f}; "
+            f"error = {abs(empirical_average_in_queue_time - average_in_queue_time):.20f}"
         )
-        imperic_channel_2_load_coefficient = self.get_channel2_load_coefficient(imperic_chances)
+        empirical_average_in_system_time = (
+            empirical_average_requests_number / empirical_absolute_channel_capacity
+        )
         print(
-            f'channel 2 load coefficient = {imperic_channel_2_load_coefficient:.20f}; '
-            f'error = {abs(imperic_channel_2_load_coefficient - channel_2_load_coefficient):.20f}'
+            f"average in system time     = {empirical_average_in_system_time:.20f}; "
+            f"error = {abs(empirical_average_in_system_time - average_in_system_time):.20f}"
+        )
+        empirical_channel_1_load_coefficient = self.get_channel1_load_coefficient(
+            empirical_chances
+        )
+        print(
+            f"channel 1 load coefficient = {empirical_channel_1_load_coefficient:.20f}; "
+            f"error = {abs(empirical_channel_1_load_coefficient - channel_1_load_coefficient):.20f}"
+        )
+        empirical_channel_2_load_coefficient = self.get_channel2_load_coefficient(
+            empirical_chances
+        )
+        print(
+            f"channel 2 load coefficient = {empirical_channel_2_load_coefficient:.20f}; "
+            f"error = {abs(empirical_channel_2_load_coefficient - channel_2_load_coefficient):.20f}"
         )
