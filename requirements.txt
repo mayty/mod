@@ -3,3 +3,4 @@ mypy==0.910
 structlog==21.1.0
 matplotlib==3.4.3
 data-science-types==0.2.23
+numpy==1.21.2

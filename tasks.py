@@ -99,3 +99,15 @@ def lab2(
         },
     )
     solution.execute()
+
+@task(
+    name='lab3',
+)
+def lab3(
+    ctx,
+    p1=0.4,
+    p2=0.4,
+):
+    from mod.lab3 import Lab3
+    solution = Lab3(p1=p1, p2=p2)
+    solution.execute()
